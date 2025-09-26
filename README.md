@@ -1,11 +1,11 @@
-## RAG Q&A Chatbot 🤖
+# RAG Q&A Chatbot 🤖
 
 This project is a Retrieval-Augmented Generation (RAG) based Q&A chatbot built using LangGraph, ChromaDB, and FastAPI.
 It leverages vector search for document retrieval, OpenAI models for response generation, and MongoDB for short-term memory storage.
 
 The chatbot is exposed via REST APIs that support both single-response requests and streaming responses.
 
-### 🚀 Features
+## 🚀 Features
 
  - 🔎 RAG with LangGraph – Combines LLM reasoning with vector search.
 
@@ -17,7 +17,7 @@ The chatbot is exposed via REST APIs that support both single-response requests 
 
  - 🔑 Environment Variables – Securely configured via .env file.
 
-### 📂 Project Structure
+## 📂 Project Structure
 
 ```bash
 ├── PDF/                     # Folder containing source PDF files
@@ -32,7 +32,7 @@ The chatbot is exposed via REST APIs that support both single-response requests 
 └── requirements.txt         # Python dependencies
 ```
 
-### ⚙️ Environment Variables
+## ⚙️ Environment Variables
 
 Create a .env file in the root directory and set the following:
 ```env
@@ -42,9 +42,9 @@ OPENAI_API_KEY = your_openai_api_key
 MONGODB_URL = your_mongodb_connection_url
 ```
 
-### 🛠️ Installation & Setup
+## 🛠️ Installation & Setup
 
-#### 1. Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/CodeByFelix/Q-A-RAG-Chatbot-with-Endpoint.git
@@ -52,7 +52,7 @@ cd Q-A-RAG-Chatbot-with-Endpoint
 ```
 
 
-#### 2. Create Virtual Environment
+### 2. Create Virtual Environment
 
 ```bash
 python -m venv venv
@@ -61,29 +61,29 @@ venv\Scripts\activate      # For Windows
 ```
 
 
-#### 3. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
 
-#### 4. Run the App
+### 4. Run the App
 
 ```bash
 uvicorn main:app --reload
 ```
 
-### 📡 API Endpoints
+## 📡 API Endpoints
 
-#### 1. Get Chat Response
+### 1. Get Chat Response
 
-##### Endpoint:
+#### Endpoint:
 ```http
 POST /chat/chat_response
 ```
 
-##### Request Body:
+#### Request Body:
 ```json
 {
   "message": "What is LangGraph?",
@@ -91,21 +91,21 @@ POST /chat/chat_response
 }
 ```
 
-##### Response:
+#### Response:
 ```json
 {
   "message": "LangGraph is a framework for building LLM-powered agents..."
 }
 ```
 
-#### 2. Get Streaming Response
+### 2. Get Streaming Response
 
-##### Endpoint:
+#### Endpoint:
 ```http
 POST /stream_response
 ```
 
-##### Request Body:
+#### Request Body:
 ```json
 {
   "message": "Explain RAG in detail",
@@ -113,12 +113,12 @@ POST /stream_response
 }
 ```
 
-##### Response:
+#### Response:
 
  - Returns a streaming text/plain response.
 
 
-### 🧩 Tech Stack
+## 🧩 Tech Stack
 
  - LangGraph
  – Agent orchestration
