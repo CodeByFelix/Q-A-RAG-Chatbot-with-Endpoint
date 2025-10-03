@@ -14,7 +14,7 @@ The chatbot is exposed via REST APIs that support both single-response requests 
  - 🧠 Short-Term Memory – Powered by MongoDB for conversation persistence.
 
  - ⚡ FastAPI Endpoints – REST APIs for synchronous and streaming responses.
- 
+
  - 📥 Data Injection Pipeline – Upload and embed PDF files into the vector store for retrieval.
 
  - 🌐 Upload Endpoint – Secure API for injecting new knowledge into the RAG system.
@@ -126,10 +126,10 @@ POST /chat/stream_response
 
 ##### Endpoint:
 ```http
-Post /chat/upload
+POST /chat/upload
 ```
 ##### Request:
-```http
+```markdown
  - File -> PDF File only
  ```
 
