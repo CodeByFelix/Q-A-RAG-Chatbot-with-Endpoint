@@ -14,6 +14,10 @@ The chatbot is exposed via REST APIs that support both single-response requests 
  - 🧠 Short-Term Memory – Powered by MongoDB for conversation persistence.
 
  - ⚡ FastAPI Endpoints – REST APIs for synchronous and streaming responses.
+ 
+ - 📥 Data Injection Pipeline – Upload and embed PDF files into the vector store for retrieval.
+
+ - 🌐 Upload Endpoint – Secure API for injecting new knowledge into the RAG system.
 
  - 🔑 Environment Variables – Securely configured via .env file.
 
@@ -23,6 +27,7 @@ The chatbot is exposed via REST APIs that support both single-response requests 
 ├── PDF/                     # Folder containing source PDF files
 ├── src/                     # Core project source code
 │   ├── __init__.py          # Marks the src directory as a package
+|   ├── embedding.py         # Data Injection pipeline
 │   ├── RAG.py               # LangGraph RAG agent logic
 │   ├── router.py            # FastAPI routes for chat & streaming
 │   ├── utils.py             # Utility functions (DB, memory, helpers)
@@ -102,7 +107,7 @@ POST /chat/chat_response
 
 ##### Endpoint:
 ```http
-POST /stream_response
+POST /chat/stream_response
 ```
 
 ##### Request Body:
@@ -116,6 +121,40 @@ POST /stream_response
 ##### Response:
 
  - Returns a streaming text/plain response.
+
+#### 3. Upload and Embed PDF
+
+##### Endpoint:
+```http
+Post /chat/upload
+```
+##### Request:
+```http
+ - File -> PDF File only
+ ```
+
+ ##### Response:
+ 200 success:
+ ```json
+ {
+  "status": "Successful",
+  "detail": "File sample.pdf Uploaded successfully"
+}
+```
+
+400 file alrady uploaded
+```json
+{
+  "detail": "File 'sample.pdf' already uploaded"
+}
+```
+
+400 file type not supported
+```json
+{
+  "detail": "File type not supported {fileName}"
+}
+```
 
 
 ### 🧩 Tech Stack
