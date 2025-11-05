@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.router import chat_router
+from src.router import chat_router, logging
 from src.RAG import init_graph
 
 app = FastAPI ()
@@ -9,4 +9,7 @@ app.include_router (router=chat_router)
 
 @app.on_event ("startup")
 async def startup_event ():
-    nn = await init_graph ()
+    try:
+        nn = await init_graph ()
+    except:
+        logging.exception ("Error occured")

@@ -9,6 +9,15 @@ from src.utils import vectorStore, llm, mongodbClient, responsePrompt, summarize
 class messagesState (MessagesState):
     summary: str
 
+class RetriverError (Exception):
+    pass
+
+class LLMCallError (Exception):
+    pass
+
+class DB_Error (Exception):
+    pass
+
 async def retrieve (query: str) -> str:
     """
     This is a tool call to retieve relevant contents fromn the vectors document
@@ -20,11 +29,14 @@ async def retrieve (query: str) -> str:
         A string of the serialized retrieval
     """
     #print (query)
-    doc = await vectorStore.amax_marginal_relevance_search(query, k=5, fetch_k=20)
-    
-    doc_content = "\n\n".join(f"Source: {d.metadata["source"]}, title: {d.metadata['title']}, page: {d.metadata['page_label']} \nContent: {d.page_content}" for d in doc)
+    try:
+        doc = await vectorStore.amax_marginal_relevance_search(query, k=5, fetch_k=20)
+    except Exception as e:
+        raise RetriverError (f"Error why retrieving context {e}.") from e
+    else:
+        doc_content = "\n\n".join(f"Source: {d.metadata["source"]}, title: {d.metadata['title']}, page: {d.metadata['page_label']} \nContent: {d.page_content}" for d in doc)
 
-    return doc_content
+        return doc_content
 
 async def summarize_conversation (state: messagesState) -> messagesState:
     """
@@ -48,16 +60,24 @@ async def summarize_conversation (state: messagesState) -> messagesState:
         )
 
         msg = msg.format (summary=summary_message, conversation=messages)
-        response = await llm.ainvoke ([SystemMessage(content=summarizeMessagePrompt)] + [HumanMessage(content=msg)])
+        try:
+            response = await llm.ainvoke ([SystemMessage(content=summarizeMessagePrompt)] + [HumanMessage(content=msg)])
+        except Exception as e:
+            raise LLMCallError (f"Error why making LLM call {e}") from e
 
-        delete_messages = [RemoveMessage(id=m.id) for m in state['messages'][:-2]]
-        return {'summary': response.content, 'messages':delete_messages}
+        else:
+            delete_messages = [RemoveMessage(id=m.id) for m in state['messages'][:-2]]
+            return {'summary': response.content, 'messages':delete_messages}
     else:
         return state
 
 async def llm_call (state: messagesState) -> messagesState:
-    response = await llm_with_tool.ainvoke ([SystemMessage(content=responsePrompt)] + state['messages'])
-    return {'messages': response}
+    try:
+        response = await llm_with_tool.ainvoke ([SystemMessage(content=responsePrompt)] + state['messages'])
+    except Exception as e:
+            raise LLMCallError (f"Error why making LLM call {e}") from e
+    else:
+        return {'messages': response}
 
 async def RAG () -> CompiledStateGraph:
     builder = StateGraph (MessagesState)
@@ -70,30 +90,44 @@ async def RAG () -> CompiledStateGraph:
     builder.add_conditional_edges ("LLM", tools_condition)
     builder.add_edge ("tools", "LLM")
 
-    memorydb = AsyncMongoDBSaver (client=mongodbClient, db_name="RAG_Memory", checkpoint_collection_name="RAG_Chat_memory")
-    graph = builder.compile (checkpointer=memorydb)
-    return graph
+    try:
+        memorydb = AsyncMongoDBSaver (client=mongodbClient, db_name="RAG_Memory", checkpoint_collection_name="RAG_Chat_memory")
+    except Exception as e:
+        raise DB_Error (f"Error connecting to db {e}") from e
+    else:
+        graph = builder.compile (checkpointer=memorydb)
+        return graph
 
 async def getResponse (query:str, thread_id:str) -> str:
     msg = HumanMessage (content=query)
     config = {'configurable': {'thread_id': thread_id}}
-    response = await graphAgent.ainvoke (input={'messages': [msg]}, config=config)
-    return response['messages'][-1].content
+    try:
+        response = await graphAgent.ainvoke (input={'messages': [msg]}, config=config)
+    except:
+        raise
+    else:
+        return response['messages'][-1].content
 
 async def streamResponse (query:str, thread_id:str):
     node_to_stream = "LLM"
     msg = HumanMessage (content=query)
     config = {'configurable': {'thread_id': thread_id}}
-    async for event in graphAgent.astream_events (input={'messages': [msg]}, config=config, version='v2'):
-        if event ['event'] == 'on_chat_model_stream' and event['metadata'].get('langgraph_node', '') == node_to_stream:
-            chunk = event['data']['chunk'].content
-            if chunk:
-                print (chunk, end='', flush=True)
-                yield chunk.encode ('utf-8')
+    try:
+        async for event in graphAgent.astream_events (input={'messages': [msg]}, config=config, version='v2'):
+            if event ['event'] == 'on_chat_model_stream' and event['metadata'].get('langgraph_node', '') == node_to_stream:
+                chunk = event['data']['chunk'].content
+                if chunk:
+                    print (chunk, end='', flush=True)
+                    yield chunk.encode ('utf-8')
+    except:
+        yield "---Error Occured---"
 
 async def init_graph ():
     global graphAgent
-    graphAgent = await RAG ()
+    try:
+        graphAgent = await RAG ()
+    except:
+        raise
     return None
 
 

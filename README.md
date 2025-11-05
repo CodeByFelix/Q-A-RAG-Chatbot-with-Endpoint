@@ -27,7 +27,7 @@ The chatbot is exposed via REST APIs that support both single-response requests 
 ├── PDF/                     # Folder containing source PDF files
 ├── src/                     # Core project source code
 │   ├── __init__.py          # Marks the src directory as a package
-|   ├── embedding.py         # Data Injection pipeline
+│   ├── embedding.py         # Data Injection pipeline
 │   ├── RAG.py               # LangGraph RAG agent logic
 │   ├── router.py            # FastAPI routes for chat & streaming
 │   ├── utils.py             # Utility functions (DB, memory, helpers)

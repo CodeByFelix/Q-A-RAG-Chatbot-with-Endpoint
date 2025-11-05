@@ -4,6 +4,12 @@ from pydantic import BaseModel
 from src.RAG import getResponse, streamResponse
 from src.embedding import embedPDF
 import os
+import logging
+
+logging.basicConfig (
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 chat_router = APIRouter (prefix="/chat", tags=['Chats'])
 
@@ -16,8 +22,13 @@ class OutputRequest (BaseModel):
 
 @chat_router.post ("/chat_response", status_code=200, response_model=OutputRequest)
 async def chatResponse (message:InputRequest):
-    response = await getResponse (query=message.message, thread_id=message.thread_id)
-    return {'message': response}
+    try:
+        response = await getResponse (query=message.message, thread_id=message.thread_id)
+        return {'message': response}
+    except:
+        logging.exception ("Error Occured")
+        raise HTTPException (status_code=500, detail="Error occured while fetching response")
+    
 
 @chat_router.post ("/stream_response")
 async def streamResponseMessage (message:InputRequest):
